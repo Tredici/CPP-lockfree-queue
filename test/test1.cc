@@ -8,7 +8,7 @@
 
 tester t1([]{
     // how many test to generate
-    constexpr std::size_t N = 100;
+    constexpr std::size_t N = 1000;
     // how many pair of workerd
     auto t_count = 1000;
     std::vector<std::thread> workers;
@@ -45,7 +45,7 @@ tester t1([]{
 
 tester t2([]{
     // how many test to generate
-    constexpr std::size_t N = 100;
+    constexpr std::size_t N = 1000;
     // how many pair of workerd
     auto t_count = 1000;
     std::vector<std::thread> workers;
