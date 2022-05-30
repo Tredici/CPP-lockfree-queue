@@ -60,7 +60,7 @@ namespace lockfree_queue
             if (N > size) {
                 // space available!
                 // get insertion position!
-                auto pos = insert_off++ % N;
+                const auto pos = insert_off++ % N;
                 // obtain value to use
                 ptr_type ptr = val.release();
                 ptr_type expected = nullptr;
@@ -84,7 +84,7 @@ namespace lockfree_queue
             if (size > 0) {
                 // non empty!
                 // get extraction position!
-                auto pos = extract_off++ % N;
+                const auto pos = extract_off++ % N;
                 // reference to the cell holding the value
                 auto& cel = data[pos];
                 ptr_type expected = nullptr;
