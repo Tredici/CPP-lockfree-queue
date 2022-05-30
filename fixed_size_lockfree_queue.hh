@@ -65,7 +65,8 @@ namespace lockfree_queue
                 ptr_type ptr = val.release();
                 ptr_type expected = nullptr;
                 // ensure previous element has been taken
-                while (!data[pos].compare_exchange_weak(expected, ptr)) {
+                auto& cel = data[pos];
+                while (!cel.compare_exchange_weak(expected, ptr)) {
                     expected = nullptr;
                 }
                 success = true;
@@ -85,9 +86,10 @@ namespace lockfree_queue
                 // get extraction position!
                 auto pos = extract_off++ % N;
                 // reference to the cell holding the value
+                auto& cel = data[pos];
                 ptr_type expected = nullptr;
                 do {
-                    expected = data[pos].exchange(nullptr);
+                    expected = cel.exchange(nullptr);
                 } while (expected == nullptr);
                 val = std::unique_ptr<value_type>(expected);
                 success = true;
