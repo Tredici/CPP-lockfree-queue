@@ -88,3 +88,47 @@ tester t2([]{
         }
     }
 });
+
+
+tester t3([]{
+    // how many test to generate
+    constexpr std::size_t N = 100;
+    // how many pair of workers
+    auto t_count = 100;
+    std::vector<std::thread> workers;
+    lockfree_queue::fixed_size_lockfree_queue<int> q(1);
+    std::vector<std::atomic_int> counter(N);
+
+    // spawn workers
+    for (int i{}; i!=t_count; ++i) {
+        // add producer
+        workers.emplace_back([&q](){
+            for (int i{}; i!=N; ++i) {
+                std::unique_ptr<int> up(new int); 
+                *up = i;
+                while (!q.offer(up));
+            }
+        });
+        // add consumer
+        workers.emplace_back([&q, &counter](){
+            for (int i{}; i!=N; ++i) {
+                std::unique_ptr<int> up;
+                while (!q.poll(up));
+                ++counter.at(*up);
+            }
+        });
+    }
+
+    // join threads
+    for (auto& t : workers) {
+        t.join();
+    }
+    return;
+    for (auto& c : counter)
+    {
+        if (c.load() != t_count) {
+            using namespace std::literals;
+            throw std::runtime_error("Error counter"s);
+        }
+    }
+});
