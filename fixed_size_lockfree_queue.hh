@@ -15,8 +15,8 @@ namespace lockfree_queue
         using value_type = T;
         using ptr_type = value_type*;
     private:
-        const long long N;
-        std::atomic_llong sz{};
+        std::size_t N;
+        std::atomic_size_t sz{};
         std::unique_ptr<std::atomic<value_type*>[]> data;
         std::atomic_size_t insert_off{}, extract_off{};
     public:
@@ -55,7 +55,8 @@ namespace lockfree_queue
             }
             bool success = false;
             // check for space available
-            const auto size = sz++;
+            typename decltype(sz)::value_type size = sz;
+            while (size < N && !sz.compare_exchange_weak(size, size+1));
             if (N > size) {
                 // space available!
                 // get insertion position!
@@ -64,12 +65,10 @@ namespace lockfree_queue
                 ptr_type ptr = val.release();
                 ptr_type expected = nullptr;
                 // ensure previous element has been taken
-                while (!data[pos].compare_exchange_strong(expected, ptr)) {
+                while (!data[pos].compare_exchange_weak(expected, ptr)) {
                     expected = nullptr;
                 }
                 success = true;
-            } else {
-                --sz;
             }
             return success;
         }
@@ -79,7 +78,8 @@ namespace lockfree_queue
                 throw std::invalid_argument("input val must be empty");
             }
             bool success = false;
-            const auto size = sz--;
+            typename decltype(sz)::value_type size = sz;
+            while (size != 0 && !sz.compare_exchange_weak(size, size-1));
             if (size > 0) {
                 // non empty!
                 // get extraction position!
@@ -91,8 +91,6 @@ namespace lockfree_queue
                 } while (expected == nullptr);
                 val = std::unique_ptr<value_type>(expected);
                 success = true;
-            } else {
-                ++sz;
             }
             return success;
         }
@@ -100,8 +98,7 @@ namespace lockfree_queue
         // estimate the number of items inside the queue,
         // alwais between 0 and N-1
         std::size_t size() const {
-            long long ans = sz;
-            return ans <= 0 ? 0 : ans >= N ? N-1 : ans;
+            return sz;
         }
 
         bool empty() const {
