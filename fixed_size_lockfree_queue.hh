@@ -50,7 +50,7 @@ namespace lockfree_queue
         // try to insert a new item, fails if there is no space
         // return true on success and false on failure
         bool offer(std::unique_ptr<T>& val) {
-            if (val.get() == nullptr) {
+            if (!val) {
                 throw std::invalid_argument("cannot insert nullptr");
             }
             bool success = false;
