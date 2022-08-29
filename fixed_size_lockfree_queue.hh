@@ -107,6 +107,10 @@ namespace lockfree_queue
             return size() == 0;
         }
 
+        bool full() const {
+            return size() == capacity();
+        }
+
         // Maximum number of elements that can be hold
         // by the queue
         std::size_t capacity() const {
