@@ -55,7 +55,7 @@ namespace lockfree_queue
             }
             bool success = false;
             // check for space available
-            typename decltype(sz)::value_type size = sz;
+            auto size = sz.load();
             while (size < N && !sz.compare_exchange_weak(size, size+1));
             if (N > size) {
                 // space available!
@@ -79,7 +79,7 @@ namespace lockfree_queue
                 throw std::invalid_argument("input val must be empty");
             }
             bool success = false;
-            typename decltype(sz)::value_type size = sz;
+            auto size = sz.load();
             while (size != 0 && !sz.compare_exchange_weak(size, size-1));
             if (size > 0) {
                 // non empty!
